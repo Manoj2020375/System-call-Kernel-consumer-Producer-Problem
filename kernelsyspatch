@@ -1,0 +1,89 @@
+diff --git OLD/sys.c NEw/sys.c
+index 8fdac0d..b194efe 100755
+--- OLD/sys.c
++++ NEw/sys.c
+@@ -200,6 +200,71 @@ out:
+ 	return error;
+ }
+ 
++
++DEFINE_MUTEX(mtx);
++struct queue
++{
++    int first;
++    int last;
++    int SIZE;
++    unsigned byte_length;
++    int * arr;
++};
++
++struct queue* queue1 = crt(6);
++
++
++struct queue* crt(unsigned byte_length)
++{
++    struct queue* queue1 = (struct queue*)malloc(sizeof(struct queue));
++    queue1 ->byte_length = byte_length;
++    queue1 ->first = queue1->SIZE=0;
++    queue1 ->last = byte_length - 1;
++    queue1 ->arr = (int*)malloc(queue1->byte_length*sizeof(int));
++return queue1;
++}
++
++SYSCALL_DEFINE1(writer,char *, user_space)
++{
++   int input;
++   if (queue1->SIZE == queue1->byte_length)
++       return -2;
++   else
++   {
++       mutex_lock(&mtx);
++       __copy_from_user(&input, user_space, 8);
++       queue1->last = (queue1->last +1)%queue1->byte_length;
++       queue1->arr[queue1->last] = input;
++       queue1->SIZE = queue1->SIZE+1;
++
++       mutex_unlock(&mtx);
++
++   }
++   return 0;
++}
++SYSCALL_DEFINE2(reader, char *, user_data){
++    int input;
++    if (queue1 ->SIZE ==0)
++    {
++        return -2;
++    }
++    else{
++       mutex_lock(&mtx);
++
++       input = queue1->arr[queue1->first];
++       queue1->first=(queue1->first+1)%queue1->byte_length;
++       queue1->SIZE = queue1->SIZE-1;
++       char data_dequeued[8];
++       __copy_to_user(&input, data_dequeued, 8);
++       return input;
++       mutex_unlock(&mtx);
++
++    }
++	return 0;
++
++}
++
++
+ SYSCALL_DEFINE3(setpriority, int, which, int, who, int, niceval)
+ {
+ 	struct task_struct *g, *p;
+diff --git OLD/syscall_64.tbl NEw/syscall_64.tbl
+index 18b5500..95f6189 100755
+--- OLD/syscall_64.tbl
++++ NEw/syscall_64.tbl
+@@ -343,6 +343,8 @@
+ 332	common	statx			sys_statx
+ 333	common	io_pgetevents		sys_io_pgetevents
+ 334	common	rseq			sys_rseq
++335 common  reader          sys_reader
++336 common  writer          sys_writer
+ # don't use numbers 387 through 423, add new calls after the last
+ # 'common' entry
+ 424	common	pidfd_send_signal	sys_pidfd_send_signal

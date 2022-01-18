@@ -1,0 +1,8 @@
+I made a system call writer where it reads the random 8-bytes of the device. In the system call writer i created a function to add the input from the user whereit enqueues 
+which changhes the first byte and the size. So first I created a structure to represent a queue and then wrote a function
+to create a queue of given size of bytes then initilaized the size ofthe queue to 0 then generally when the queue is full there is no chance enqueuing a input. 
+Now the system call writer just reads the data and enqueue it.
+Now in the reader system call the main functionality is to dequeue the the enqueued bytes so i wrotre a function to remove the item from the queue whichver enqueued into it.
+I used copy from user which directly reads the data from user space address in the writer system call which then used copy to user in reader which copies data fromkernel space to user space.
+Finally I used open function P program to open the random path given /dev/random and read() to read 8 bytes from it which then stored in array by calling the system call writer the P will be sending the string to C where 
+it is received as system call reader is called in the program C. I used close() to close the file.
